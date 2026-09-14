@@ -7,11 +7,6 @@
 
 I used this repository to build and run a small NGINX app with Docker, GitHub Actions, Nomad, Consul, Promtail, Loki, and Grafana.
 
-## Flow
-
-```text
-Source code -> GitHub Actions -> GHCR -> Nomad and Consul -> Promtail -> Loki -> Grafana
-```
 
 ## Prerequisites
 
