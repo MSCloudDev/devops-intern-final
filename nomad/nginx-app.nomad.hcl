@@ -1,11 +1,11 @@
+variable "image_tag" {
+  type    = string
+  default = "latest"
+}
+
 job "nginx-app" {
   datacenters = ["dc1"]
   type = "service"
-
-  variable "image_tag" {
-    type    = string
-    default = "latest"
-  }
 
   group "nginx" {
     count = 1
@@ -63,6 +63,7 @@ job "nginx-app" {
       delay          = "15s"
       delay_function = "exponential"
       max_delay      = "1h"
+      unlimited      = false
     }
   }
 }
