@@ -2,12 +2,17 @@ job "nginx-app" {
   datacenters = ["dc1"]
   type = "service"
 
+  variable "image_tag" {
+    type    = string
+    default = "latest"
+  }
+
   group "nginx" {
     count = 1
 
     network {
       port "http" {
-        to = 80
+        to = 8080
       }
     }
 
@@ -15,14 +20,49 @@ job "nginx-app" {
       driver = "docker"
 
       config {
-        image = "shams20/devops-project:latest"
+        image = "ghcr.io/msclouddev/devops-project:${var.image_tag}"
         ports = ["http"]
       }
 
       resources {
-        cpu    = 500
-        memory = 256
+        cpu    = 100
+        memory = 64
       }
+
+      service {
+        name = "nginx-app"
+        port = "http"
+
+        check {
+          name     = "nginx-health"
+          type     = "http"
+          path     = "/healthz"
+          interval = "10s"
+          timeout  = "2s"
+        }
+      }
+    }
+
+    update {
+      max_parallel      = 1
+      min_healthy_time  = "10s"
+      healthy_deadline  = "2m"
+      auto_revert       = true
+    }
+
+    restart {
+      attempts = 3
+      interval = "30m"
+      delay    = "15s"
+      mode     = "fail"
+    }
+
+    reschedule {
+      attempts       = 3
+      interval       = "30m"
+      delay          = "15s"
+      delay_function = "exponential"
+      max_delay      = "1h"
     }
   }
 }
