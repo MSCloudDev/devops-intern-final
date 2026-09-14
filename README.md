@@ -113,6 +113,18 @@ The job uses one service group and one Docker task, allocates 100 MHz and 64 MB,
 
 Validation was run locally with Nomad 2.0.6 and completed successfully. A healthy allocation requires a Linux Nomad client with the Docker driver enabled; the native Windows client reports the Linux Docker driver as unhealthy.
 
+Observed with Nomad 2.0.6 in WSL2 on 2026-09-14:
+
+```text
+nomad job plan: All tasks successfully allocated
+nomad job run: Job registration successful
+Allocation: df158fd4-c41b-ba43-730c-8580fa652c9f
+Status: running
+Dynamic port: 31787 -> 8080
+HTTP /healthz: 200 OK
+Consul nginx-health: passing (HTTP GET /healthz: 200 OK)
+```
+
 ## Task 6: Loki Monitoring
 
 Start Loki, Promtail, and Grafana:
