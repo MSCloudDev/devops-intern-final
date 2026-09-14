@@ -17,8 +17,8 @@ source code -> GitHub Actions -> GHCR image -> Nomad + Consul -> Docker logs -> 
 
 - Docker Desktop 4.70.0 or newer
 - Docker Engine 29.4.0 or newer
-- Nomad 1.7.x
-- Consul 1.18.x
+- Nomad 2.0.6
+- Consul 2.0.4
 - ShellCheck 0.10.x
 - Git
 
