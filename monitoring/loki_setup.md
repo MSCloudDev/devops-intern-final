@@ -1,42 +1,42 @@
-# Loki Monitoring Setup
+# Loki Setup
 
 ## Components
 
-- Loki 3.0.0 stores the log streams.
-- Promtail 3.0.0 discovers Docker containers and reads their JSON logs.
-- Grafana 11.1.0 provides the Explore view.
+- Loki 3.0.0 stores logs.
+- Promtail 3.0.0 reads Docker JSON logs.
+- Grafana 11.1.0 is used to search them.
 
-## Start the stack
+## Start
 
-Run this from the repository root:
+Run from the repository root:
 
 ```bash
 docker compose -f monitoring/docker-compose.yaml up -d
 docker compose -f monitoring/docker-compose.yaml ps
 ```
 
-Grafana is available at `http://localhost:3000`. Add a Loki data source with the URL `http://loki:3100`.
+Open Grafana at `http://localhost:3000` and add Loki with the URL `http://loki:3100`.
 
 ## Labels
 
-Promtail attaches these labels to Docker log streams:
+For the application log stream, Promtail adds these labels:
 
 - `job`: `docker`
 - `container`: the Docker container name
 - `service`: `nginx-app`
 
-The Docker socket is used for discovery and the container JSON log directory is mounted read-only.
+Promtail uses the Docker socket and the read-only container log directory.
 
-## Check ingestion
+## Test logs
 
-Start the application and create a known 404 entry:
+Start the app and create a 404 entry:
 
 ```bash
 docker run --rm --name devops-project -p 8080:8080 devops-project:test
 curl -i http://localhost:8080/not-found
 ```
 
-In Grafana Explore, select the Loki data source and run:
+In Grafana Explore, run:
 
 ```logql
 {job="docker", service="nginx-app"}
@@ -48,7 +48,7 @@ To isolate failed requests:
 {job="docker", service="nginx-app"} |~ " 404 | 500 "
 ```
 
-The expected result is an NGINX access log containing `/not-found` and status `404`. If no stream appears, restart Promtail after confirming that Docker exposes JSON logs and check `docker compose -f monitoring/docker-compose.yaml logs promtail`.
+The result should contain `/not-found` and status `404`. If no log appears, check `docker compose -f monitoring/docker-compose.yaml logs promtail`.
 
 Observed locally on 2026-09-14:
 
@@ -59,4 +59,4 @@ container=devops-project job=docker service=nginx-app
 
 ## Notes
 
-The configuration files are committed in this directory so the stack does not depend on configuration downloaded at runtime. Grafana dashboards and authentication are intentionally left as local-development defaults.
+The config files are committed in this directory. Grafana uses its local default settings.

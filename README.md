@@ -1,25 +1,24 @@
-# DevOps Intern Final Assessment
+# DevOps Intern Assessment
 
 [![CI](https://github.com/MSCloudDev/devops-intern-final/actions/workflows/ci.yml/badge.svg)](https://github.com/MSCloudDev/devops-intern-final/actions/workflows/ci.yml)
 
 **Name:** Mahmoud Shams
 **Assessment date:** 2026-09-14
 
-This repository contains a small NGINX website, a Docker image, GitHub Actions CI, a Nomad job, and a Loki monitoring stack.
+I used this repository to build and run a small NGINX app with Docker, GitHub Actions, Nomad, Consul, Promtail, Loki, and Grafana.
 
-## Architecture
+## Flow
 
 ```text
-source code -> GitHub Actions -> GHCR image -> Nomad + Consul -> Docker logs -> Promtail -> Loki -> Grafana
+Source code -> GitHub Actions -> GHCR -> Nomad and Consul -> Promtail -> Loki -> Grafana
 ```
 
 ## Prerequisites
 
-- Docker Desktop 4.70.0 or newer
-- Docker Engine 29.4.0 or newer
-- Nomad 2.0.6
-- Consul 2.0.4
-- ShellCheck 0.10.x
+- Docker
+- Nomad
+- Consul
+- ShellCheck
 - Git
 
 ## Quick Start
@@ -33,11 +32,11 @@ bash scripts/healthcheck.sh http://localhost:8080/healthz
 docker compose -f monitoring/docker-compose.yaml up -d
 ```
 
-The site is available at http://localhost:8080. Grafana is available at http://localhost:3000.
+The app runs at http://localhost:8080. Grafana runs at http://localhost:3000.
 
 ## Task 1: Source Control
 
-Work was developed in feature branches and merged to `main`. The final state is tagged `v1.0.0`:
+I worked in feature branches and merged the changes into `main`. The final state is tagged `v1.0.0`:
 
 ```bash
 git checkout main
@@ -45,11 +44,11 @@ git pull --ff-only
 git show --no-patch --decorate v1.0.0
 ```
 
-The repository history contains small conventional commits such as `docs: organize repo structure` and a merged pull request.
+The history includes feature, fix, and docs commits, plus merged pull requests.
 
 ## Task 2: Linux Scripts
 
-Both scripts use `set -euo pipefail` and are tracked as executable files.
+Both scripts use `set -euo pipefail` and are executable in Git.
 
 ```bash
 shellcheck scripts/*.sh
@@ -63,11 +62,11 @@ Example health check output:
 Health check OK: http://localhost:8080/healthz returned HTTP 200
 ```
 
-`sysinfo.sh` prints the user and UID, hostname, kernel, ISO-8601 date, disk usage, memory usage, and Docker daemon status.
+`sysinfo.sh` prints basic host information and Docker status.
 
 ## Task 3: Containerisation
 
-The image uses the pinned `nginx:1.27-alpine` base image, listens on port 8080, runs as `nginx`, and has a Docker health check. `BUILD_SHA` is written into the HTML page during the build.
+The image uses `nginx:1.27-alpine`, listens on port 8080, runs as `nginx`, and has a Docker health check. The build SHA is written into the page.
 
 ```bash
 docker build --build-arg BUILD_SHA=local-test -t devops-project:test ./app
@@ -89,18 +88,18 @@ Image size: 20,980,771 bytes (about 20.9 MB)
 
 ## Task 4: Continuous Integration
 
-`.github/workflows/ci.yml` runs on pushes and pull requests to `main`.
+The workflow runs on pushes and pull requests to `main`.
 
 - `lint` runs ShellCheck and Hadolint.
 - `build` builds the image with the Git commit SHA.
 - `test` starts the image and runs `scripts/healthcheck.sh`.
 - `publish` runs only after a push to `main` and pushes both the SHA tag and `latest` to GHCR.
 
-The workflow uses `GITHUB_TOKEN` with `packages: write` only in the publish job.
+Only the publish job gets `packages: write` permission.
 
 ## Task 5: Nomad
 
-Start a local Nomad and Consul development agent, then validate and plan the job:
+Start local Nomad and Consul dev agents, then run:
 
 ```bash
 nomad job validate -var="image_tag=latest" nomad/nginx-app.nomad.hcl
@@ -109,11 +108,11 @@ nomad job run -var="image_tag=latest" nomad/nginx-app.nomad.hcl
 nomad job status nginx-app
 ```
 
-The job uses one service group and one Docker task, allocates 100 MHz and 64 MB, maps a dynamic `http` port to container port 8080, registers an HTTP Consul check, and enables rolling updates, restart, and reschedule policies.
+The job has one group and one Docker task. It uses 100 MHz CPU, 64 MB memory, a dynamic `http` port, a Consul HTTP check, rolling updates, restart, and reschedule settings.
 
-Validation was run locally with Nomad 2.0.6 and completed successfully. A healthy allocation requires a Linux Nomad client with the Docker driver enabled; the native Windows client reports the Linux Docker driver as unhealthy.
+I validated this with Nomad 2.0.6. A running allocation needs a Linux Nomad client with the Docker driver. The native Windows client did not support the Linux Docker driver.
 
-Observed with Nomad 2.0.6 in WSL2 on 2026-09-14:
+Observed in WSL2 on 2026-09-14:
 
 ```text
 nomad job plan: All tasks successfully allocated
@@ -134,13 +133,13 @@ docker compose -f monitoring/docker-compose.yaml up -d
 curl -i http://localhost:8080/missing-page
 ```
 
-Open Grafana at http://localhost:3000 and add Loki as a data source with URL `http://loki:3100`. In Explore, a useful query is:
+In Grafana, add Loki with URL `http://loki:3100`. In Explore, use:
 
 ```logql
 {job="docker", service="nginx-app"} |~ " 404 | 500 "
 ```
 
-The Promtail labels are `job`, `container`, and `service`. The complete setup notes are in [monitoring/loki_setup.md](monitoring/loki_setup.md).
+For the application log stream, Promtail adds the `job`, `container`, and `service` labels. More notes are in [monitoring/loki_setup.md](monitoring/loki_setup.md).
 
 ![Grafana Explore](docs/screenshots/grafana-explore.png)
 
@@ -150,8 +149,8 @@ The Promtail labels are `job`, `container`, and `service`. The complete setup no
 2. **The page shows `BUILD_SHA_PLACEHOLDER`:** rebuild the image with `--build-arg BUILD_SHA=...`; the value is inserted during `docker build`.
 3. **Nomad allocation is unhealthy:** check `nomad alloc status <allocation-id>` and confirm that the allocated port reaches `/healthz` and that Consul is running.
 
-## Known Limitations
+## Limitations
 
-- GHCR publishing requires the GitHub repository package settings to allow `GITHUB_TOKEN` to write packages.
-- The local monitoring setup uses Docker discovery. Nomad production logs would be better shipped directly from a Nomad client or a dedicated logging agent.
-- TLS, secrets management, persistent Grafana configuration, and high availability are not included.
+- GHCR publishing needs package write access for `GITHUB_TOKEN`.
+- Promtail uses Docker discovery. A Nomad client logging setup would be better for a larger deployment.
+- TLS, secrets management, persistent Grafana settings, and high availability are not included.
