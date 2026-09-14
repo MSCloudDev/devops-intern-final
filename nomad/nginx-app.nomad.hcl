@@ -18,6 +18,7 @@ job "nginx-app" {
 
     task "nginx" {
       driver = "docker"
+      shutdown_delay = "10s"
 
       config {
         image = "ghcr.io/msclouddev/devops-intern-final:${var.image_tag}"
