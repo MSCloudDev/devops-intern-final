@@ -1,6 +1,6 @@
 # DevOps Intern Final Assessment
 
-[![CI](https://github.com/MSCloudDev/devops-project/actions/workflows/ci.yml/badge.svg)](https://github.com/MSCloudDev/devops-project/actions/workflows/ci.yml)
+[![CI](https://github.com/MSCloudDev/devops-intern-final/actions/workflows/ci.yml/badge.svg)](https://github.com/MSCloudDev/devops-intern-final/actions/workflows/ci.yml)
 
 **Name:** Mahmoud Shams
 **Assessment date:** 2026-09-14
@@ -25,7 +25,7 @@ source code -> GitHub Actions -> GHCR image -> Nomad + Consul -> Docker logs -> 
 ## Quick Start
 
 ```bash
-git clone https://github.com/MSCloudDev/devops-project.git
+git clone https://github.com/MSCloudDev/devops-intern-final.git
 cd devops-project
 docker build --build-arg BUILD_SHA=local-test -t devops-project:test ./app
 docker run --rm -d --name devops-project -p 8080:8080 devops-project:test
