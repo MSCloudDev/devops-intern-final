@@ -104,13 +104,15 @@ The workflow uses `GITHUB_TOKEN` with `packages: write` only in the publish job.
 Start a local Nomad and Consul development agent, then validate and plan the job:
 
 ```bash
-nomad job validate nomad/nginx-app.nomad.hcl
+nomad job validate -var="image_tag=latest" nomad/nginx-app.nomad.hcl
 nomad job plan -var="image_tag=latest" nomad/nginx-app.nomad.hcl
 nomad job run -var="image_tag=latest" nomad/nginx-app.nomad.hcl
 nomad job status nginx-app
 ```
 
 The job uses one service group and one Docker task, allocates 100 MHz and 64 MB, maps a dynamic `http` port to container port 8080, registers an HTTP Consul check, and enables rolling updates, restart, and reschedule policies.
+
+Validation was run locally with Nomad 2.0.6 and completed successfully. A healthy allocation requires a Linux Nomad client with the Docker driver enabled; the native Windows client reports the Linux Docker driver as unhealthy.
 
 ## Task 6: Loki Monitoring
 
