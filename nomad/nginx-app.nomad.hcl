@@ -20,7 +20,7 @@ job "nginx-app" {
       driver = "docker"
 
       config {
-        image = "ghcr.io/msclouddev/devops-project:${var.image_tag}"
+        image = "ghcr.io/msclouddev/devops-intern-final:${var.image_tag}"
         ports = ["http"]
       }
 
