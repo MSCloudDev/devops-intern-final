@@ -26,7 +26,7 @@ source code -> GitHub Actions -> GHCR image -> Nomad + Consul -> Docker logs -> 
 
 ```bash
 git clone https://github.com/MSCloudDev/devops-intern-final.git
-cd devops-project
+cd devops-intern-final
 docker build --build-arg BUILD_SHA=local-test -t devops-project:test ./app
 docker run --rm -d --name devops-project -p 8080:8080 devops-project:test
 bash scripts/healthcheck.sh http://localhost:8080/healthz
@@ -37,13 +37,12 @@ The site is available at http://localhost:8080. Grafana is available at http://l
 
 ## Task 1: Source Control
 
-Work was developed in feature branches and merged to `main`. The final repository should be tagged with `v1.0.0` after the final review:
+Work was developed in feature branches and merged to `main`. The final state is tagged `v1.0.0`:
 
 ```bash
 git checkout main
 git pull --ff-only
-git tag -a v1.0.0 -m "Release v1.0.0"
-git push origin v1.0.0
+git show --no-patch --decorate v1.0.0
 ```
 
 The repository history contains small conventional commits such as `docs: organize repo structure` and a merged pull request.
