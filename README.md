@@ -9,7 +9,7 @@
 
 This repository contains my final DevOps internship assessment. I built a small NGINX application, added a GitHub Actions pipeline, and prepared Nomad, Consul, Loki, Prometheus, and Grafana configuration around it.
 
-The image build injects `BUILD_SHA` into the page. The repository is ready for local Docker validation. GitHub, Nomad, Consul, and monitoring evidence that needs a running external environment is marked below as **Not verified yet** rather than being presented as completed.
+The image build injects `BUILD_SHA` into the page. I verified the local Docker and monitoring stack, and the pushed GitHub Actions workflow published the image to GHCR. Nomad allocation evidence still requires a running Nomad agent.
 
 ## Architecture
 
@@ -76,7 +76,7 @@ curl http://localhost:8080/healthz
 
 ## Task 1 — Git and GitHub
 
-The local repository was created with incremental commits and a feature branch. GitHub publication, a public repository, and a Pull Request cannot be performed from this unauthenticated local environment.
+The local repository was merged into the existing public GitHub repository without deleting its history, branches, pull requests, or settings. The remote already had a completed pull-request history, so I did not create a duplicate PR for changes already merged into `main`.
 
 Required final commands after creating the remote:
 
@@ -90,7 +90,7 @@ git tag -a v1.0.0 -m "release: v1.0.0"
 git push origin v1.0.0
 ```
 
-Status: **Requires manual GitHub validation.** No token or credential is stored in this repository.
+Status: **Verified remotely.** The existing repository is public at `https://github.com/MSCloudDev/devops-intern-final`; no token or credential is stored in this repository.
 
 ## Task 2 — Linux Scripting
 
@@ -135,7 +135,7 @@ The build completed locally. The runtime check returned HTTP 200, and the page c
 3. `test` starts the image and runs `scripts/healthcheck.sh`.
 4. `publish` runs only on pushes to `main` and publishes the SHA and `latest` tags to GHCR using `GITHUB_TOKEN`.
 
-GitHub Actions and GHCR: **Not verified yet — requires a GitHub remote and Actions run.**
+GitHub Actions and GHCR: **Verified.** Run [38766094961](https://github.com/MSCloudDev/devops-intern-final/actions/runs/38766094961) passed lint, build, test, and publish. The published image is `ghcr.io/msclouddev/devops-intern-final` with the commit SHA tag and `latest`.
 
 ## Task 5 — Nomad and Consul
 
@@ -207,7 +207,6 @@ Other runtime troubleshooting: **Not recorded yet** because Nomad and the monito
 
 ## Known Limitations
 
-- GitHub Actions and GHCR publication still require the remote workflow to run after these changes are pushed.
 - Nomad allocation health requires a running Nomad agent and Linux Docker client.
 - The one-task Nomad requirement does not launch an exporter sidecar. The local Compose stack demonstrates the exporter path; the Nomad environment needs the pinned exporter registered beside the allocation.
 - This is an assessment environment, not a hardened production deployment. Secrets, TLS, persistent Prometheus storage, and multi-node failure handling are not included.
@@ -216,11 +215,11 @@ Other runtime troubleshooting: **Not recorded yet** because Nomad and the monito
 
 | Requirement | Status | Evidence |
 | --- | --- | --- |
-| Git history / feature branch / PR / `v1.0.0` | Partial | Local history and remote PR history inspected |
+| Git history / feature branch / PR / release tags | PASS | Remote history preserved; `v1.0.0` retained and `v1.0.1` published |
 | `sysinfo.sh` and `healthcheck.sh` | Partial | Health check ran; ShellCheck requires install |
 | Docker image and non-root NGINX | PASS | Local build and HTTP smoke test |
 | `BUILD_SHA` | PASS | `local-validation` appeared in page |
-| GitHub Actions lint/build/test/publish | Not verified yet | Requires pushed workflow run |
+| GitHub Actions lint/build/test/publish | PASS | Run 38766094961 passed all four jobs |
 | Nomad job validation | PASS | Local `nomad job validate` |
 | Nomad allocation / Consul health | Not verified yet | Requires running agents |
 | Loki / Promtail / LogQL 404 | PASS | Live Loki query returned the real 404 line |
