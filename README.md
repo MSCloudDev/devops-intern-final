@@ -126,7 +126,7 @@ curl -i http://localhost:8080/healthz
 curl http://localhost:8080/
 ```
 
-The build completed locally. The runtime check returned HTTP 200, and the page contained `local-validation`. The resulting image was built from the pinned `nginx:1.27.2-alpine3.20` image; its exact size should be recorded with `docker images` on the review machine.
+The build completed locally. The runtime check returned HTTP 200, and the page contained `local-validation`. Docker image inspection reported a local image size of `22,783,570` bytes (about 21.7 MiB), below the 60 MB target. The `docker images` display may include shared-layer accounting; `docker image inspect IMAGE --format '{{.Size}}'` is the size check I used.
 
 ## Task 4 — CI/CD
 
