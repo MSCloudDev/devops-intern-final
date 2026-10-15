@@ -1,0 +1,14 @@
+{
+  "service": {
+    "name": "nginx-app-metrics",
+    "id": "nginx-app-metrics-local",
+    "address": "nginx-exporter",
+    "port": 9113,
+    "tags": ["metrics", "nginx"],
+    "checks": [{
+      "http": "http://nginx-exporter:9113/metrics",
+      "interval": "10s",
+      "timeout": "2s"
+    }]
+  }
+}

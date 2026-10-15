@@ -1,0 +1,1 @@
+Screenshots are added only after the corresponding service has been run and the evidence has been captured.

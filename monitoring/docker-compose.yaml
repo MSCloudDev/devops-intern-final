@@ -1,0 +1,72 @@
+services:
+  nginx-app:
+    build:
+      context: ../app
+      args:
+        BUILD_SHA: local-compose
+    image: devops-intern-final:local-compose
+    labels:
+      service: nginx-app
+    ports:
+      - "8080:8080"
+    networks: [observability]
+
+  consul:
+    image: hashicorp/consul:1.20.1
+    command: agent -server -bootstrap-expect=1 -ui -client=0.0.0.0
+    ports:
+      - "18500:8500"
+    volumes:
+      - ./consul-config:/consul/config
+    networks: [observability]
+
+  nginx-exporter:
+    image: nginx/nginx-prometheus-exporter:1.4.2
+    command: --nginx.scrape-uri=http://nginx-app:8080/nginx_status
+    depends_on: [nginx-app]
+    networks: [observability]
+
+  prometheus:
+    image: prom/prometheus:v2.53.1
+    command: --config.file=/etc/prometheus/prometheus.yml --storage.tsdb.path=/prometheus
+    depends_on: [consul, nginx-exporter]
+    ports:
+      - "19090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    networks: [observability]
+
+  loki:
+    image: grafana/loki:3.0.0
+    command: -config.file=/etc/loki/loki-config.yaml
+    ports:
+      - "13100:3100"
+    volumes:
+      - ./loki-config.yaml:/etc/loki/loki-config.yaml:ro
+      - loki-data:/loki
+    networks: [observability]
+
+  promtail:
+    image: grafana/promtail:3.0.0
+    command: -config.file=/etc/promtail/promtail-config.yaml
+    depends_on: [loki]
+    volumes:
+      - ./promtail-config.yaml:/etc/promtail/promtail-config.yaml:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks: [observability]
+
+  grafana:
+    image: grafana/grafana:11.1.0
+    depends_on: [prometheus, loki]
+    ports:
+      - "13000:3000"
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./grafana/provisioning/dashboards/nginx-service.json:/var/lib/grafana/dashboards/nginx-service.json:ro
+    networks: [observability]
+
+volumes:
+  loki-data:
+
+networks:
+  observability:
