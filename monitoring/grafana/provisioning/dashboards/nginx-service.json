@@ -1,0 +1,20 @@
+{
+  "annotations": {"list": []},
+  "editable": true,
+  "graphTooltip": 1,
+  "panels": [
+    {"id": 1, "type": "stat", "title": "Exporter Target", "datasource": {"type": "prometheus", "uid": "prometheus"}, "gridPos": {"h": 5, "w": 8, "x": 0, "y": 0}, "targets": [{"expr": "sum(up{job=\"nginx-app\"})", "refId": "A"}]},
+    {"id": 2, "type": "stat", "title": "NGINX Status", "datasource": {"type": "prometheus", "uid": "prometheus"}, "gridPos": {"h": 5, "w": 8, "x": 8, "y": 0}, "targets": [{"expr": "nginx_up", "refId": "A"}]},
+    {"id": 3, "type": "timeseries", "title": "Request Rate", "datasource": {"type": "prometheus", "uid": "prometheus"}, "gridPos": {"h": 8, "w": 8, "x": 16, "y": 0}, "targets": [{"expr": "rate(nginx_http_requests_total[5m])", "legendFormat": "requests/sec", "refId": "A"}]},
+    {"id": 4, "type": "timeseries", "title": "Connection States", "datasource": {"type": "prometheus", "uid": "prometheus"}, "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8}, "targets": [{"expr": "nginx_connections_active", "legendFormat": "Active", "refId": "A"}, {"expr": "nginx_connections_reading", "legendFormat": "Reading", "refId": "B"}, {"expr": "nginx_connections_writing", "legendFormat": "Writing", "refId": "C"}, {"expr": "nginx_connections_waiting", "legendFormat": "Waiting", "refId": "D"}]},
+    {"id": 5, "type": "timeseries", "title": "Totals", "datasource": {"type": "prometheus", "uid": "prometheus"}, "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8}, "targets": [{"expr": "nginx_connections_accepted", "legendFormat": "Accepted connections", "refId": "A"}, {"expr": "nginx_connections_handled", "legendFormat": "Handled connections", "refId": "B"}, {"expr": "nginx_http_requests_total", "legendFormat": "HTTP requests", "refId": "C"}]},
+    {"id": 6, "type": "logs", "title": "NGINX Logs", "datasource": {"type": "loki", "uid": "loki"}, "gridPos": {"h": 10, "w": 24, "x": 0, "y": 16}, "targets": [{"expr": "{job=\"docker\", service=\"nginx-app\"}", "refId": "A"}], "options": {"showTime": true, "sortOrder": "Descending", "wrapLines": false}}
+  ],
+  "refresh": "15s",
+  "schemaVersion": 39,
+  "templating": {"list": []},
+  "time": {"from": "now-30m", "to": "now"},
+  "title": "NGINX Service Health",
+  "uid": "nginx-service-health",
+  "version": 1
+}
