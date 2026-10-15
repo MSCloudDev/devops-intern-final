@@ -147,10 +147,10 @@ Validate and plan it with the repository owner and SHA tag:
 nomad fmt nomad/nginx-app.nomad.hcl
 nomad job validate nomad/nginx-app.nomad.hcl
 nomad job plan \
-  -var='image_repository=ghcr.io/MSCloudDev/devops-intern-final' \
+  -var='image_repository=ghcr.io/msclouddev/devops-intern-final' \
   -var='image_tag=GIT_SHA' nomad/nginx-app.nomad.hcl
 nomad job run \
-  -var='image_repository=ghcr.io/MSCloudDev/devops-intern-final' \
+  -var='image_repository=ghcr.io/msclouddev/devops-intern-final' \
   -var='image_tag=GIT_SHA' nomad/nginx-app.nomad.hcl
 nomad job status nginx-app
 consul health service nginx-app

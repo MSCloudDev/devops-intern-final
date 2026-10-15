@@ -1,6 +1,6 @@
 variable "image_repository" {
   type    = string
-  default = "ghcr.io/MSCloudDev/devops-intern-final"
+  default = "ghcr.io/msclouddev/devops-intern-final"
 }
 
 variable "image_tag" {
