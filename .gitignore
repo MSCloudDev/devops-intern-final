@@ -1,0 +1,8 @@
+.idea/
+.vscode/
+*.swp
+*.tmp
+.env
+.env.*
+!.env.example
+*.log
