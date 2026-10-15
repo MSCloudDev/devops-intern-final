@@ -28,7 +28,7 @@ flowchart TD
     Prometheus --> Grafana
 ```
 
-The local monitoring composition includes a Consul agent and a pinned exporter. The Nomad job itself is intentionally one group and one task as required by the assessment; an exporter is expected to run beside the allocation in the target environment. The current Nomad metrics registration points at the NGINX status endpoint, so the exporter registration still needs to be supplied by the deployment environment before Prometheus can scrape it there.
+The local monitoring composition includes a Consul agent and a pinned exporter. The Nomad job runs the same pinned exporter as a sidecar in the NGINX task group. It scrapes `127.0.0.1:8080/nginx_status` and registers `nginx-app-metrics` on the separate `metrics` port, where Consul and Prometheus discover `/metrics`.
 
 ## Repository Structure
 
@@ -78,19 +78,17 @@ curl http://localhost:8080/healthz
 
 The local repository was merged into the existing public GitHub repository without deleting its history, branches, pull requests, or settings. The remote already had a completed pull-request history, so I did not create a duplicate PR for changes already merged into `main`.
 
-Required final commands after creating the remote:
+Useful repository and release commands:
 
 ```sh
-git remote add origin https://github.com/MSCloudDev/devops-intern-final.git
-git push -u origin main
-git push -u origin feature/observability
-gh pr create --base main --head feature/observability --title "feat: add observability stack" --body "Adds Loki, Promtail, Prometheus, Grafana, and dashboard provisioning."
-# Review the PR in GitHub, then merge it.
-git tag -a v1.0.0 -m "release: v1.0.0"
-git push origin v1.0.0
+git remote -v
+git push origin main
+git push origin feature/observability
+# Existing releases are listed at:
+# https://github.com/MSCloudDev/devops-intern-final/releases
 ```
 
-Status: **Verified remotely.** The existing repository is public at `https://github.com/MSCloudDev/devops-intern-final`; no token or credential is stored in this repository.
+Status: **Verified remotely.** The existing repository is public at `https://github.com/MSCloudDev/devops-intern-final`; releases through `v1.0.2` are published, and no token or credential is stored in this repository.
 
 ## Task 2 — Linux Scripting
 
@@ -139,7 +137,7 @@ GitHub Actions and GHCR: **Verified.** Run [38766094961](https://github.com/MSCl
 
 ## Task 5 — Nomad and Consul
 
-The job is a service job with one group and one Docker task. It uses a dynamic `http` port mapped to container port 8080, 100 MHz CPU, 64 MB memory, rolling update settings, restart policy, and reschedule policy.
+The job is a service job with one group containing the NGINX task and a pinned exporter sidecar. NGINX uses a dynamic `http` port mapped to container port 8080, while the exporter uses a separate dynamic `metrics` port mapped to 9113. The NGINX task uses 100 MHz CPU and 64 MB memory; the exporter uses 50 MHz CPU and 32 MB memory.
 
 Validate and plan it with the repository owner and SHA tag:
 
@@ -203,19 +201,19 @@ The first local `nomad job validate` failed because the reschedule policy set `a
 
 The first monitoring Compose attempt also hit a stale `nginx-app` container-name conflict and then a host port conflict with an existing Loki container. I removed only the validation container I had started and moved this project's monitoring ports to 13000, 13100, 18500, and 19090. Consul initially exited because its image needed a writable config mount; Loki initially rejected old Docker log timestamps. Both were fixed in the committed Compose/configuration files.
 
-Other runtime troubleshooting: **Not recorded yet** because Nomad and the monitoring services have not been run in this environment.
+Nomad runtime troubleshooting: **Not verified yet** because no Nomad agent is running in this environment. The Docker Compose monitoring stack has been run and verified locally.
 
 ## Known Limitations
 
 - Nomad allocation health requires a running Nomad agent and Linux Docker client.
-- The one-task Nomad requirement does not launch an exporter sidecar. The local Compose stack demonstrates the exporter path; the Nomad environment needs the pinned exporter registered beside the allocation.
+- The Nomad sidecar configuration has passed local HCL validation, but the allocation has not been run here. A Linux Nomad client with the Docker driver is still required for full deployment verification.
 - This is an assessment environment, not a hardened production deployment. Secrets, TLS, persistent Prometheus storage, and multi-node failure handling are not included.
 
 ## Final Validation
 
 | Requirement | Status | Evidence |
 | --- | --- | --- |
-| Git history / feature branch / PR / release tags | PASS | Remote history preserved; `v1.0.0` retained and `v1.0.1` published |
+| Git history / feature branch / PR / release tags | PASS | Remote history preserved; `v1.0.0` retained and `v1.0.2` published |
 | `sysinfo.sh` and `healthcheck.sh` | Partial | Health check ran; ShellCheck requires install |
 | Docker image and non-root NGINX | PASS | Local build and HTTP smoke test |
 | `BUILD_SHA` | PASS | `local-validation` appeared in page |

@@ -26,6 +26,10 @@ job "nginx-app" {
       port "http" {
         to = 8080
       }
+
+      port "metrics" {
+        to = 9113
+      }
     }
 
     restart {
@@ -70,17 +74,35 @@ job "nginx-app" {
         }
       }
 
-      # This registration lets the exporter path be discovered by Consul.
-      # Run the pinned exporter beside this allocation and set its address to
-      # the allocation's NGINX service address.
+    }
+
+    task "nginx-exporter" {
+      driver = "docker"
+
+      config {
+        image = "nginx/nginx-prometheus-exporter:1.4.2"
+        args  = ["--nginx.scrape-uri=http://127.0.0.1:8080/nginx_status"]
+        ports = ["metrics"]
+      }
+
+      lifecycle {
+        hook    = "prestart"
+        sidecar = true
+      }
+
+      resources {
+        cpu    = 50
+        memory = 32
+      }
+
       service {
         name = "nginx-app-metrics"
-        port = "http"
+        port = "metrics"
 
         check {
           name     = "nginx-app-metrics-healthz"
           type     = "http"
-          path     = "/nginx_status"
+          path     = "/metrics"
           interval = "10s"
           timeout  = "2s"
         }
