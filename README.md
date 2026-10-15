@@ -3,7 +3,7 @@
 **Built by:** Mahmoud Sameh Shams  
 **Assessment date:** 2026-10-15
 
-[![CI](https://github.com/OWNER/devops-intern-final/actions/workflows/ci.yml/badge.svg)](https://github.com/OWNER/devops-intern-final/actions/workflows/ci.yml)
+[![CI](https://github.com/MSCloudDev/devops-intern-final/actions/workflows/ci.yml/badge.svg)](https://github.com/MSCloudDev/devops-intern-final/actions/workflows/ci.yml)
 
 ## Overview
 
@@ -60,7 +60,7 @@ Install Docker Desktop, Git, Nomad, Consul, and ShellCheck. ShellCheck was not i
 ## Quick Start
 
 ```sh
-git clone https://github.com/OWNER/devops-intern-final.git
+git clone https://github.com/MSCloudDev/devops-intern-final.git
 cd devops-intern-final
 docker build --build-arg BUILD_SHA=local-validation -t devops-intern-final:local app
 docker run --rm --name nginx-app -p 8080:8080 devops-intern-final:local
@@ -74,8 +74,6 @@ curl http://localhost:8080/healthz
 ./scripts/healthcheck.sh http://localhost:8080
 ```
 
-Replace `OWNER` in the clone URL, badge, and Nomad variable with the GitHub account that owns the repository.
-
 ## Task 1 — Git and GitHub
 
 The local repository was created with incremental commits and a feature branch. GitHub publication, a public repository, and a Pull Request cannot be performed from this unauthenticated local environment.
@@ -83,7 +81,7 @@ The local repository was created with incremental commits and a feature branch. 
 Required final commands after creating the remote:
 
 ```sh
-git remote add origin https://github.com/OWNER/devops-intern-final.git
+git remote add origin https://github.com/MSCloudDev/devops-intern-final.git
 git push -u origin main
 git push -u origin feature/observability
 gh pr create --base main --head feature/observability --title "feat: add observability stack" --body "Adds Loki, Promtail, Prometheus, Grafana, and dashboard provisioning."
@@ -149,10 +147,10 @@ Validate and plan it with the repository owner and SHA tag:
 nomad fmt nomad/nginx-app.nomad.hcl
 nomad job validate nomad/nginx-app.nomad.hcl
 nomad job plan \
-  -var='image_repository=ghcr.io/OWNER/devops-intern-final' \
+  -var='image_repository=ghcr.io/MSCloudDev/devops-intern-final' \
   -var='image_tag=GIT_SHA' nomad/nginx-app.nomad.hcl
 nomad job run \
-  -var='image_repository=ghcr.io/OWNER/devops-intern-final' \
+  -var='image_repository=ghcr.io/MSCloudDev/devops-intern-final' \
   -var='image_tag=GIT_SHA' nomad/nginx-app.nomad.hcl
 nomad job status nginx-app
 consul health service nginx-app
@@ -195,13 +193,9 @@ I verified the local runtime path. Prometheus returned `up=1` for `nginx-exporte
 
 The dashboard is provisioned as `NGINX Service Health`, UID `nginx-service-health`, refreshing every 15 seconds with a 30-minute default range. The local Compose Grafana URL is `http://localhost:13000`. I opened the live dashboard and verified all six panel titles and real values in the browser.
 
-The required complete screenshot is still **Blocked — requires manual capture**. The integrated browser could inspect all six panels but its saved image only captured the first visible portion of Grafana's internal scroll area, so I did not keep it as evidence.
+The dashboard screenshot was captured from the running Grafana instance after generating application traffic and a 404 request.
 
-Evidence file to capture manually:
-
-`docs/screenshots/grafana-nginx-dashboard.png`
-
-To capture it, open `http://localhost:3000`, open `NGINX Service Health`, generate normal traffic and one 404, wait for collection, confirm the six panels and Loki log line, then save the actual screenshot at that path. Remove the screenshot ignore rule only when adding that real file.
+![NGINX Service Health Dashboard](docs/screenshots/grafana-nginx-dashboard.png)
 
 ## Troubleshooting
 
@@ -213,8 +207,8 @@ Other runtime troubleshooting: **Not recorded yet** because Nomad and the monito
 
 ## Known Limitations
 
-- The GitHub owner is represented by `OWNER` until the remote repository is created.
-- GitHub PR, GHCR publication, Nomad allocation, Consul health, Loki ingestion, and screenshots require the reviewer's authenticated environment.
+- GitHub Actions and GHCR publication still require the remote workflow to run after these changes are pushed.
+- Nomad allocation health requires a running Nomad agent and Linux Docker client.
 - The one-task Nomad requirement does not launch an exporter sidecar. The local Compose stack demonstrates the exporter path; the Nomad environment needs the pinned exporter registered beside the allocation.
 - This is an assessment environment, not a hardened production deployment. Secrets, TLS, persistent Prometheus storage, and multi-node failure handling are not included.
 
@@ -222,15 +216,15 @@ Other runtime troubleshooting: **Not recorded yet** because Nomad and the monito
 
 | Requirement | Status | Evidence |
 | --- | --- | --- |
-| Git history / feature branch / PR / `v1.0.0` | Requires manual validation | No remote configured |
+| Git history / feature branch / PR / `v1.0.0` | Partial | Local history and remote PR history inspected |
 | `sysinfo.sh` and `healthcheck.sh` | Partial | Health check ran; ShellCheck requires install |
 | Docker image and non-root NGINX | PASS | Local build and HTTP smoke test |
 | `BUILD_SHA` | PASS | `local-validation` appeared in page |
-| GitHub Actions lint/build/test/publish | Not verified yet | Requires GitHub remote |
+| GitHub Actions lint/build/test/publish | Not verified yet | Requires pushed workflow run |
 | Nomad job validation | PASS | Local `nomad job validate` |
 | Nomad allocation / Consul health | Not verified yet | Requires running agents |
 | Loki / Promtail / LogQL 404 | PASS | Live Loki query returned the real 404 line |
 | Prometheus / exporter / real metrics | PASS | Live target `up=1`, `nginx_up=1`, request counter |
-| Grafana six-panel dashboard | Partial | Live browser verified six panels; complete screenshot blocked |
-| Real screenshots | Not verified yet | No fake images committed |
+| Grafana six-panel dashboard | PASS | Live dashboard and committed screenshot |
+| Real screenshots | PASS | `docs/screenshots/grafana-nginx-dashboard.png` |
 | README / troubleshooting / limitations | PASS | This document |
